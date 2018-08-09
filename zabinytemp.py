@@ -15,7 +15,7 @@ def load_img():
     imgname = re.search('<td><img src="([^"]*)".*',r.text).group(1)
     baseurl = MAIN_PAGE_URL[0:MAIN_PAGE_URL.rindex('/')]
     imgurl = baseurl + '/' + imgname
-    im = imageio.imread(imgurl)
+    im = imageio.imread(imgurl,ignoregamma=True)
     assert isinstance(im, np.ndarray)
     return im[:,:,:3] # Remove the alpha channel, we don't need it
 
@@ -84,16 +84,21 @@ def binary_array(img):
     ret = np.zeros(img.shape[:2])
     for i in range(img.shape[0]):
         for j in range(img.shape[1]):
-            if img[i,j,0] != 202 or\
-                img[i,j,1] != 202 or\
-                img[i,j,2] != 202:
+            if img[i,j,0] != 153 or\
+                img[i,j,1] != 153 or\
+                img[i,j,2] != 153:
                 ret[i,j] = 1
     return ret
 
-
-if __name__ == "__main__":
+def temp():
     main_img = load_img()
     zabiny_color = find_color(main_img)
-    print('Color:', zabiny_color)
-    temp = find_temp(main_img, zabiny_color)
-    print('Temperature:', temp)
+    t = find_temp(main_img, zabiny_color)
+    return t
+
+if __name__ == "__main__":
+        main_img = load_img()
+        zabiny_color = find_color(main_img)
+        print('Color:', zabiny_color)
+        t = find_temp(main_img, zabiny_color)
+        print('Temperature:', t)

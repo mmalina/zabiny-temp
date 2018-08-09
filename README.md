@@ -22,5 +22,5 @@ pip3 install requests imageio
 ## How to use
 
 ```bash
-python3 temperature.py
+python3 zabinytemp.py
 ```
