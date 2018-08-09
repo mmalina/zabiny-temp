@@ -4,6 +4,8 @@ import requests
 import re
 import imageio
 import numpy as np
+from datetime import datetime
+import pytz
 
 MAIN_PAGE_URL = 'http://portal.chmi.cz/files/portal/docs/poboc/PR/grafy/br/grafy-ams-lnk.html'
 
@@ -77,7 +79,24 @@ def find_temp(img, color):
     assert hits, 'We could not find our color in the whole chart'
     hit = sum(hits)/len(hits)
     temperature = (zero_offset-hit)*10/ten_deg
-    return round(temperature,1)
+
+    # Find where midnight is on x-axis. Then it's 18px per hr (or 3min per px).
+    for midnight_col,pixel in enumerate(img[430]):
+        if not np.array_equal(pixel,np.array([153,153,153])):
+            break
+    # print('Midnight_col:',midnight_col)
+
+    # If there is daytime saving in effect in our time zone
+    # we need to add one hour as the chart always shows GMT+1
+    if datetime.now(pytz.timezone('Europe/Prague')).utcoffset().seconds == 7200:
+        offset = 60
+    else:
+        offset = 0
+
+    time = (x - midnight_col) * 60 // 18 + offset
+    time_str = "{}:{:02d}".format(time // 60 % 24, time % 60)
+
+    return round(temperature,1),time_str
 
 def binary_array(img):
     # Create a new array that will have 0 for grey pixels and 1 for all others
@@ -93,12 +112,13 @@ def binary_array(img):
 def temp():
     main_img = load_img()
     zabiny_color = find_color(main_img)
-    t = find_temp(main_img, zabiny_color)
+    t,_ = find_temp(main_img, zabiny_color)
     return t
 
 if __name__ == "__main__":
         main_img = load_img()
         zabiny_color = find_color(main_img)
-        print('Color:', zabiny_color)
-        t = find_temp(main_img, zabiny_color)
+        # print('Color:', zabiny_color)
+        t,time = find_temp(main_img, zabiny_color)
         print('Temperature:', t)
+        print('Time:', time)
