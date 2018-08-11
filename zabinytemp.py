@@ -7,11 +7,26 @@ import numpy as np
 from datetime import datetime
 import pytz
 
+# from functools import wraps
+# from time import time
+#
+#
+# def timing(f):
+#     @wraps(f)
+#     def wrapper(*args, **kwargs):
+#         start = time()
+#         result = f(*args, **kwargs)
+#         end = time()
+#         print ('Elapsed time: {}'.format(end-start))
+#         return result
+#     return wrapper
+
 MAIN_PAGE_URL = 'http://portal.chmi.cz/files/portal/docs/poboc/PR/grafy/br/grafy-ams-lnk.html'
 
 def load_img():
-    # Get the main page and extract the chart image url.
-    # Then open the image and return it.
+    """Get the main page and extract the chart image url.
+    Then open the image and return it.
+    """
     r = requests.get(MAIN_PAGE_URL)
     assert r.status_code == 200, 'Status code should be 200'
     imgname = re.search('<td><img src="([^"]*)".*',r.text).group(1)
@@ -29,7 +44,7 @@ def find_color(img):
     # Create a new array that will have 0 for grey pixels and 1 for all others
     bin_a = binary_array(places_a)
     # The template to look for - the caron + upper line in Ž
-    template = np.array([[0,1,1,1,1,1],[0,0,1,1,1,0],[1,1,1,1,1,1]])
+    template = np.array([[0,1,1,1,1,1],[0,0,1,1,1,0],[1,1,1,1,1,1]],dtype=np.int16)
     for i in range(bin_a.shape[1]-5):
         if np.array_equal(template,bin_a[:,i:i+6]):
             # We found our match
@@ -46,16 +61,16 @@ def find_temp(img, color):
     numbers = img[:,880:]
     bin_a = binary_array(numbers)
     # This is the standalone 0 marking zero degrees
-    template = np.array([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0., 0., 0., 0., 1., 1., 1., 1., 0., 0., 0., 0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0., 0., 0., 1., 1., 1., 1., 1., 1., 0., 0., 0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 1., 1., 1., 0., 0., 0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 1., 1., 1., 0., 0., 0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 1., 1., 1., 0., 0., 0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0., 0., 0., 1., 1., 0., 1., 1., 1., 0., 0., 0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0., 0., 0., 1., 1., 1., 1., 1., 1., 0., 0., 0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0., 0., 0., 0., 1., 1., 1., 1., 0., 0., 0., 0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]])
+    template = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],dtype=np.int16)
     for i in range(bin_a.shape[0]-9):
         if np.array_equal(template,bin_a[i:i+10,:]):
             # We found our match
@@ -64,8 +79,6 @@ def find_temp(img, color):
     zero_offset = i + 5
     ten_deg = 48+47 # how many rows per 10 degrees
     top,bottom,right = 21,405,868
-    # print('Zero offset is', zero_offset)
-    # print('Total range is', (bottom-top)*10/ten_deg)
     # crawl the chart from the right until we find a value for our color
     # (it can be overriden by other colors in some columns)
     for x in range(right,100,-1):
@@ -78,47 +91,33 @@ def find_temp(img, color):
             break # we found our color in the current column
     assert hits, 'We could not find our color in the whole chart'
     hit = sum(hits)/len(hits)
-    temperature = (zero_offset-hit)*10/ten_deg
+    temperature = round((zero_offset-hit)*10/ten_deg,1)
 
     # Find where midnight is on x-axis. Then it's 18px per hr (or 3min per px).
     for midnight_col,pixel in enumerate(img[430]):
         if not np.array_equal(pixel,np.array([153,153,153])):
             break
-    # print('Midnight_col:',midnight_col)
 
+    time = (x - midnight_col) * 60 // 18
     # If there is daytime saving in effect in our time zone
     # we need to add one hour as the chart always shows GMT+1
     if datetime.now(pytz.timezone('Europe/Prague')).utcoffset().seconds == 7200:
-        offset = 60
-    else:
-        offset = 0
-
-    time = (x - midnight_col) * 60 // 18 + offset
+        time += 60
     time_str = "{}:{:02d}".format(time // 60 % 24, time % 60)
 
-    return round(temperature,1),time_str
+    return temperature,time_str
 
-def binary_array(img):
-    # Create a new array that will have 0 for grey pixels and 1 for all others
-    ret = np.zeros(img.shape[:2])
-    for i in range(img.shape[0]):
-        for j in range(img.shape[1]):
-            if img[i,j,0] != 153 or\
-                img[i,j,1] != 153 or\
-                img[i,j,2] != 153:
-                ret[i,j] = 1
-    return ret
+def binary_array(im):
+    """Create a new array with 0 for grey pixels and 1 for all others"""
+    return np.clip(np.where(im==153,0,1).sum(axis=2),0,1)
 
-def temp():
+def run():
     main_img = load_img()
     zabiny_color = find_color(main_img)
-    t,_ = find_temp(main_img, zabiny_color)
-    return t
+    t,time = find_temp(main_img, zabiny_color)
+    return t,time
 
 if __name__ == "__main__":
-        main_img = load_img()
-        zabiny_color = find_color(main_img)
-        # print('Color:', zabiny_color)
-        t,time = find_temp(main_img, zabiny_color)
+        t,time = run()
         print('Temperature:', t)
         print('Time:', time)
