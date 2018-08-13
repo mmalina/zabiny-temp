@@ -4,7 +4,7 @@ import requests
 import re
 import imageio
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 # from functools import wraps
@@ -103,9 +103,21 @@ def find_temp(img, color):
     # we need to add one hour as the chart always shows GMT+1
     if datetime.now(pytz.timezone('Europe/Prague')).utcoffset().seconds == 7200:
         time += 60
-    time_str = "{}:{:02d}".format(time // 60 % 24, time % 60)
+    hour = time // 60 % 24
+    minute = time % 60
 
-    return temperature,time_str
+    now = datetime.now(pytz.timezone('Europe/Prague'))
+    ts = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    # we derive our timestamp from now().
+    # there is a possibility that we changed e.g. 0:04 to 23:55.
+    # in such case we have to substract 1 from the day
+    if ts > now:
+        ts = ts - timedelta(days=1)
+
+    # time_str = "{}:{:02d}".format(time // 60 % 24, time % 60)
+    # print('Old time_str:',time_str)
+
+    return temperature,ts
 
 def binary_array(im):
     """Create a new array with 0 for grey pixels and 1 for all others"""
@@ -115,9 +127,12 @@ def run():
     main_img = load_img()
     zabiny_color = find_color(main_img)
     t,time = find_temp(main_img, zabiny_color)
+
     return t,time
 
 if __name__ == "__main__":
         t,time = run()
         print('Temperature:', t)
-        print('Time:', time)
+        # print('Time:', time)
+        delta = datetime.now(pytz.timezone('Europe/Prague')) - time
+        print('Delay:',delta.seconds//60)

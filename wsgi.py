@@ -1,10 +1,14 @@
 from flask import Flask
+import json
 import zabinytemp
 application = Flask(__name__)
 
 @application.route("/")
 def index():
-    return str(zabinytemp.run()[0])
+    t,time = zabinytemp.run()
+    data = { 'ts': time.isoformat(),
+            'temp': t}
+    return json.dumps(data)
 
 @application.route("/test")
 def test():
