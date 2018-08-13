@@ -6,7 +6,8 @@ application = Flask(__name__)
 @application.route("/")
 def index():
     t,time = zabinytemp.run()
-    data = { 'ts': time.isoformat(),
+    data = { 'isotime': time.isoformat(),
+             'timestamp': int(time.timestamp()),
             'temp': t}
     return json.dumps(data)
 
