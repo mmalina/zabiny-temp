@@ -11,6 +11,8 @@ The goal of this project is to read the graphical representation of that image
 and return the current temperature as a number. Then use the value and display it
 in a Connect IQ app running on my Garmin fenix 5s watch.
 
+![Turn a chart into a number](show.png)
+
 There are three parts:
 
 1. Python app
