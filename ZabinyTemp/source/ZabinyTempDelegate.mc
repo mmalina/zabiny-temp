@@ -25,7 +25,7 @@ class ZabinyTempDelegate extends Ui.BehaviorDelegate {
         notify.invoke("Executing\nRequest");
 
         Comm.makeWebRequest(
-            "https://anyberry.net/zabinytemp/get.php",
+            "https://anyberry.net/zabinytemp/temp.json",
             {
             },
             {
