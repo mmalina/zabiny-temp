@@ -48,6 +48,33 @@ Install virtual environment, install deps and run the script
 ```bash
 virtualenv --python=python3 env
 source env/bin/activate
-pip3 install -r requirements.txt
+pip3 install -r requirements-no-web.txt
 python3 zabinytemp.py
 ```
+
+## Contents
+
+The files and directories included in this repo.
+
+### ZabinyTemp
+
+This is the Eclipse project for the Connect IQ app. You can easily import it into
+Eclipse. See here for for more information about Connect IQ app development:
+https://developer.garmin.com/connect-iq/programmers-guide/getting-started/
+
+### requirements-no-web.txt
+
+Python modules required for standalone usage without running a web server.
+
+### requirements.txt
+
+Python modules required to run the Flask app on gunicorn web server.
+
+### wsgi.py
+
+This is a simple gunicorn web app that OpenShift detects and runs.
+
+### zabinytemp.py
+
+Standalone python app that returns the current temperature read from the image
+on CHMI web.
