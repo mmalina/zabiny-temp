@@ -42,17 +42,20 @@ def load_img():
 def find_color(img):
     # Get a 3-pixel stripe from the chart - it contains the top of Ž
     places_a = img[435:438, :, :]
+    # imageio.imwrite("places_a.png", places_a)
     # Just for debugging - print() prints the whole thing and not just a sample
     np.set_printoptions(threshold=np.inf)
     # Create a new array that will have 0 for grey pixels and 1 for all others
     bin_a = binary_array(places_a)
+    # print(bin_a)
     # The template to look for - the caron + upper line in Ž
-    template = np.array([[0, 1, 1, 1, 1, 1],
-                         [0, 0, 1, 1, 1, 0],
-                         [1, 1, 1, 1, 1, 1]], dtype=np.int16)
+    template = np.array([[0, 1, 0, 1, 0, 0],
+                         [0, 0, 1, 0, 0, 0],
+                         [1, 1, 1, 1, 0, 0]], dtype=np.int16)
     for i in range(bin_a.shape[1]-5):
         if np.array_equal(template, bin_a[:, i:i+6]):
             # We found our match
+            # print(f"Found the color at x = {i}")
             break
     # The color is a few pixels to the right and down from our match
     color = places_a[2, i+1]  # e.g. [255 255 255]
@@ -69,19 +72,20 @@ def find_temp(img, color):
     # This is the standalone 0 marking zero degrees
     template = np.array([
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         dtype=np.int16)
     for i in range(bin_a.shape[0]-9):
         if np.array_equal(template, bin_a[i:i+10, :]):
             # We found our match
+            # print(f"We found the zero: {i}")
             break
     assert i < bin_a.shape[0]-9
     zero_offset = i + 5
@@ -104,9 +108,11 @@ def find_temp(img, color):
     # Find where midnight is on x-axis. Then it's 18px per hr (or 3min per px).
     for midnight_col, pixel in enumerate(img[430]):
         if not np.array_equal(pixel, np.array([153, 153, 153])):
+            # print(f"Found midnight: x = {midnight_col}")
             break
 
-    time = (x - midnight_col) * 60 // 18
+    # The time labels are now 12px to the left from the actual time mark
+    time = (x - (midnight_col + 12)) * 60 // 18
     # If there is daytime saving in effect in our time zone
     # we need to add one hour as the chart always shows GMT+1
     if datetime.now(pytz.timezone('Europe/Prague')).utcoffset().seconds ==\
@@ -136,6 +142,7 @@ def binary_array(im):
 
 def run():
     main_img = load_img()
+    # imageio.imwrite("main_img.png", main_img)
     zabiny_color = find_color(main_img)
     t, time = find_temp(main_img, zabiny_color)
 
@@ -143,8 +150,8 @@ def run():
 
 
 if __name__ == "__main__":
-        t, time = run()
-        print('Temperature:', t)
-        # print('Time:', time)
-        delta = datetime.now(pytz.timezone('Europe/Prague')) - time
-        print('Delay:', delta.seconds//60)
+    t, time = run()
+    print('Temperature:', t)
+    print('Time:', time)
+    delta = datetime.now(pytz.timezone('Europe/Prague')) - time
+    print('Delay:', delta.seconds//60)
