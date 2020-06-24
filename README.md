@@ -80,3 +80,13 @@ This is a simple gunicorn web app that OpenShift detects and runs.
 
 Standalone python app that returns the current temperature read from the image
 on CHMI web.
+
+## Update 06/2020
+
+There were breaking changes in the source image format, so I needed to update
+the python script. Unfortunately I am no longer able to redeploy the new
+version on the free Openshift account.
+
+For now, I set up a local Home Assistant add-on to run the wsgi app in gunicorn.
+
+All that's needed is to clone this repo in the `addons/` volume (e.g. mounted via the samba HA add-on), then refresh the add-ons and install the local addon. Once the add-on is running, the resulting json will be available at http://hassio.local:8080/ and this can be easily used with the rest sensor in HA.
