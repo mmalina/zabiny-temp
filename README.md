@@ -89,4 +89,5 @@ version on the free Openshift account.
 
 For now, I set up a local Home Assistant add-on to run the wsgi app in gunicorn.
 
-All that's needed is to clone this repo in the `addons/` volume (e.g. mounted via the samba HA add-on), then refresh the add-ons and install the local addon. Once the add-on is running, the resulting json will be available at http://hassio.local:8080/ and this can be easily used with the rest sensor in HA.
+All that's needed is to clone this repo in the `addons/` volume (e.g. mounted via the samba HA add-on), then refresh the add-ons and install the local addon. Once the add-on is running, the resulting json will be available at http://hassio.local:8000/ and this can be easily used with the rest sensor in HA (but in that case you will have to use the local hostname on the internal
+network, so the url will be http://local-zabiny-temp:8000/).
