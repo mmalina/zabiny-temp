@@ -90,14 +90,14 @@ def find_temp(img, color):
     assert i < bin_a.shape[0]-9
     zero_offset = i + 5
     ten_deg = 48 + 47  # how many rows per 10 degrees
-    top, bottom, right = 21, 405, 868
+    top, bottom, right = 21, 405, 869
     # crawl the chart from the right until we find a value for our color
     # (it can be overriden by other colors in some columns)
     for x in range(right, 100, -1):
         hits = []  # sometimes there can be more than one
         for y in range(top, bottom):
             if np.array_equal(img[y, x], color):
-                # print('Match at x,y:',x,y)
+                # print('Match at x,y:', x, y)
                 hits.append(y)
         if hits:
             break  # we found our color in the current column
@@ -105,14 +105,31 @@ def find_temp(img, color):
     hit = sum(hits)/len(hits)
     temperature = round((zero_offset-hit)*10/ten_deg, 1)
 
-    # Find where midnight is on x-axis. Then it's 18px per hr (or 3min per px).
-    for midnight_col, pixel in enumerate(img[430]):
-        if not np.array_equal(pixel, np.array([153, 153, 153])):
-            # print(f"Found midnight: x = {midnight_col}")
+    # Find where midnight is on x-axis. Then it's 18px per hr.
+    # We need to figure out where 00:00 is on the x axis (time)
+    times = img[414:422, :]
+    bin_a = binary_array(times)
+    # This is the 00:00 marking midnight, the pattern has 26 px
+    pattern = np.array([
+        [0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0],
+        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0],
+        ],
+        dtype=np.int16)
+    for i in range(bin_a.shape[1]-25):
+        if np.array_equal(pattern, bin_a[:, i:i+26]):
+            # We found our match
+            # print(f"We found the midnight: {i}")
             break
+    # The time labels are 12px to the left from the actual time mark
+    midnight_col = i + 12
 
-    # The time labels are now 12px to the left from the actual time mark
-    time = (x - (midnight_col + 12)) * 60 // 18
+    time = (x - (midnight_col)) * 60 // 18
     # If there is daytime saving in effect in our time zone
     # we need to add one hour as the chart always shows GMT+1
     if datetime.now(pytz.timezone('Europe/Prague')).utcoffset().seconds ==\
