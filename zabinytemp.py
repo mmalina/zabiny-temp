@@ -60,7 +60,7 @@ def find_color(img):
     # The color is a few pixels to the right and down from our match
     color = places_a[2, i+1]  # e.g. [255 255 255]
     assert color.shape == (3,)
-    print(f"Color: {color}")
+    # print(f"Color: {color}")
     return color
 
 
@@ -68,19 +68,19 @@ def find_temp(img, color):
     # chart = img[25:]
 
     # We need to figure out where 0 is on the y axis (temperature)
-    numbers = img[:, 880:]
+    numbers = img[:, 980:]
     bin_a = binary_array(numbers)
     # This is the standalone 0 marking zero degrees
     template = np.array([
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         dtype=np.int16)
     for i in range(bin_a.shape[0]-9):
@@ -91,7 +91,7 @@ def find_temp(img, color):
     assert i < bin_a.shape[0]-9
     zero_offset = i + 5
     ten_deg = 48 + 47  # how many rows per 10 degrees
-    top, bottom, right = 21, 405, 869
+    top, bottom, right = 21, 405, 969
     # crawl the chart from the right until we find a value for our color
     # (it can be overriden by other colors in some columns)
     for x in range(right, 100, -1):
@@ -106,29 +106,14 @@ def find_temp(img, color):
     hit = sum(hits)/len(hits)
     temperature = round((zero_offset-hit)*10/ten_deg, 1)
 
-    # Find where midnight is on x-axis. Then it's 18px per hr.
-    # We need to figure out where 00:00 is on the x axis (time)
-    times = img[414:422, :]
-    bin_a = binary_array(times)
-    # This is the 00:00 marking midnight, the pattern has 26 px
-    pattern = np.array([
-        [0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0],
-        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
-        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
-        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
-        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
-        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
-        [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
-        [0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0],
-        ],
-        dtype=np.int16)
-    for i in range(bin_a.shape[1]-25):
-        if np.array_equal(pattern, bin_a[:, i:i+26]):
-            # We found our match
-            # print(f"We found the midnight: {i}")
+    # Find where midnight is on x-axis. It's the think | above 00:00.
+    # Then it's 18px per hr (or 3min per px).
+    for midnight_col, pixel in enumerate(img[409, 6:]):
+        if not np.array_equal(pixel, np.array([153, 153, 153])):
             break
-    # The time labels are 12px to the left from the actual time mark
-    midnight_col = i + 12
+    # We started from x = 6, and then it's 1px to the right
+    midnight_col = midnight_col + 7
+    # print(f"midnight_col = {midnight_col}")
 
     time = (x - (midnight_col)) * 60 // 18
     # If there is daytime saving in effect in our time zone
@@ -138,6 +123,7 @@ def find_temp(img, color):
         time += 60
     hour = time // 60 % 24
     minute = time % 60
+    # print(f"time={time} hour={hour} minute={minute}")
 
     now = datetime.now(pytz.timezone('Europe/Prague'))
     ts = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
