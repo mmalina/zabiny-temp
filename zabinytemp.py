@@ -49,17 +49,18 @@ def find_color(img):
     bin_a = binary_array(places_a)
     # print(bin_a)
     # The template to look for - the caron + upper line in Ž
-    template = np.array([[0, 1, 0, 1, 0, 0],
-                         [0, 0, 1, 0, 0, 0],
-                         [1, 1, 1, 1, 0, 0]], dtype=np.int16)
+    template = np.array([[0, 1, 1, 1, 1, 1],
+                         [0, 0, 1, 1, 1, 0],
+                         [1, 1, 1, 1, 1, 1]], dtype=np.int16)
     for i in range(bin_a.shape[1]-5):
-        if np.array_equal(template, bin_a[:, i:i+6]):
+        if np.array_equal(template, bin_a[:3, i:i+6]):
             # We found our match
             # print(f"Found the color at x = {i}")
             break
     # The color is a few pixels to the right and down from our match
     color = places_a[2, i+1]  # e.g. [255 255 255]
     assert color.shape == (3,)
+    print(f"Color: {color}")
     return color
 
 
