@@ -34,7 +34,6 @@ def load_img():
     imgname = re.search('<td><img src="([^"]*)".*', r.text).group(1)
     baseurl = MAIN_PAGE_URL[0:MAIN_PAGE_URL.rindex('/')]
     imgurl = baseurl + '/' + imgname
-    # print(imgurl)
     im = imageio.imread(imgurl, ignoregamma=True)
     assert isinstance(im, np.ndarray)
     return im[:, :, :3]  # Remove the alpha channel, we don't need it
@@ -50,13 +49,13 @@ def find_color(img):
     bin_a = binary_array(places_a)
     # print(bin_a)
     # The template to look for - the caron + upper line in Ž
-    template = np.array([[0, 1, 0, 1, 0, 0],
-                         [0, 0, 1, 0, 0, 0],
-                         [1, 1, 1, 1, 0, 0]], dtype=np.int16)
+    template = np.array([[0, 1, 1, 1, 1, 1],
+                         [0, 0, 1, 1, 1, 0],
+                         [1, 1, 1, 1, 1, 1]], dtype=np.int16)
     for i in range(bin_a.shape[1]-5):
         if np.array_equal(template, bin_a[:3, i:i+6]):
             # We found our match
-            print(f"Found the color at x = {i}")
+            # print(f"Found the color at x = {i}")
             break
     # The color is a few pixels to the right and down from our match
     color = places_a[2, i+1]  # e.g. [255 255 255]
@@ -74,14 +73,14 @@ def find_temp(img, color):
     # This is the standalone 0 marking zero degrees
     template = np.array([
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         dtype=np.int16)
     for i in range(bin_a.shape[0]-9):
@@ -107,7 +106,7 @@ def find_temp(img, color):
     hit = sum(hits)/len(hits)
     temperature = round((zero_offset-hit)*10/ten_deg, 1)
 
-    # Find where midnight is on x-axis. It's the thick | above 00:00.
+    # Find where midnight is on x-axis. It's the think | above 00:00.
     # Then it's 18px per hr (or 3min per px).
     for midnight_col, pixel in enumerate(img[409, 6:]):
         if not np.array_equal(pixel, np.array([153, 153, 153])):
@@ -149,7 +148,6 @@ def run():
     main_img = load_img()
     # imageio.imwrite("main_img.png", main_img)
     zabiny_color = find_color(main_img)
-    # print(f"zabiny_color: {zabiny_color}")
     t, time = find_temp(main_img, zabiny_color)
 
     return t, time
