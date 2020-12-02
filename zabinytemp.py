@@ -33,11 +33,13 @@ def load_img():
     Then open the image and return it.
     """
     r = requests.get(MAIN_PAGE_URL, verify=False)
-    assert r.status_code == 200, 'Status code should be 200'
+    r.raise_for_status()
     imgname = re.search('<td><img src="([^"]*)".*', r.text).group(1)
     baseurl = MAIN_PAGE_URL[0:MAIN_PAGE_URL.rindex('/')]
     imgurl = baseurl + '/' + imgname
-    im = imageio.imread(imgurl, ignoregamma=True)
+    r = requests.get(imgurl, verify=False)
+    r.raise_for_status()
+    im = imageio.imread(r.content, ignoregamma=True)
     assert isinstance(im, np.ndarray)
     return im[:, :, :3]  # Remove the alpha channel, we don't need it
 
