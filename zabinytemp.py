@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import requests
+import urllib3
 import re
 import imageio
 import numpy as np
@@ -24,12 +25,14 @@ import pytz
 MAIN_PAGE_URL =\
  'http://portal.chmi.cz/files/portal/docs/poboc/PR/grafy/br/grafy-ams-lnk.html'
 
+urllib3.disable_warnings()
+
 
 def load_img():
     """Get the main page and extract the chart image url.
     Then open the image and return it.
     """
-    r = requests.get(MAIN_PAGE_URL)
+    r = requests.get(MAIN_PAGE_URL, verify=False)
     assert r.status_code == 200, 'Status code should be 200'
     imgname = re.search('<td><img src="([^"]*)".*', r.text).group(1)
     baseurl = MAIN_PAGE_URL[0:MAIN_PAGE_URL.rindex('/')]
