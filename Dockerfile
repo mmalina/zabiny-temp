@@ -12,4 +12,4 @@ RUN apk add --no-cache nginx python3 py3-numpy py3-pillow py3-gunicorn py3-pip &
     pip3 install Flask requests imageio pytz
 
 # TODO: Try uwsgi instead, possibly with nginx?
-CMD ["gunicorn", "-w 4", "-b 0.0.0.0:8000", "wsgi:application"]
+CMD ["gunicorn", "-w 4", "-b 0.0.0.0:8000", "-t 120", "wsgi:application"]
