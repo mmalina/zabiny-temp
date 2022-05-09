@@ -1,6 +1,6 @@
 {
     "name": "zabiny-temp",
-    "version": "0.5",
+    "version": "0.6",
     "slug": "zabiny-temp",
     "description": "Temperature in Brno-Zabovresky",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
