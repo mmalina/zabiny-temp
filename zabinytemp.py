@@ -37,6 +37,7 @@ def load_img():
     imgname = re.search('<td><img src="([^"]*)".*', r.text).group(1)
     baseurl = MAIN_PAGE_URL[0:MAIN_PAGE_URL.rindex('/')]
     imgurl = baseurl + '/' + imgname
+    # print(f"Loading image from {imgurl}")
     r = requests.get(imgurl, verify=False)
     r.raise_for_status()
     im = imageio.imread(r.content, ignoregamma=True)
@@ -81,20 +82,22 @@ def find_temp(img, color):
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         dtype=np.int16)
+    match_row = 0
     for i in range(bin_a.shape[0]-9):
         if np.array_equal(template, bin_a[i:i+10, :]):
             # We found our match
             # print(f"We found the zero: {i}")
+            match_row = i
             break
-    assert i < bin_a.shape[0]-9
-    zero_offset = i + 5
+    assert match_row != 0, "We couldn't find 0 on the y axis"
+    zero_offset = match_row + 5
     ten_deg = 48 + 47  # how many rows per 10 degrees
     top, bottom, right = 21, 405, 969
     # crawl the chart from the right until we find a value for our color
