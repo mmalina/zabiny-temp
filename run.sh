@@ -2,16 +2,13 @@
 
 IMG_URL="https://www.chmi.cz/files/portal/docs/poboc/PR/grafy/br/~TEP2M.PNG"
 IMG_FILENAME=main_img.png
-OUTPUT_JSON=temp.json
+OUTPUT_JSON=/data/temp.json
 
-# Specify an alternate output dir as a cli argument.
-# Otherwise the json is saved in the current dir.
-if [ $# -gt 0 ]
-then
-    OUTPUT_JSON=$1/$OUTPUT_JSON
-fi
+mkdir /data || true
 
-PREV_MD5SUM="0"
+nginx
+
+PREV_MD5SUM=0
 while true
 do
     curl -s -o $IMG_FILENAME $IMG_URL
