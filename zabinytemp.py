@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-import requests
+import pytz
 import urllib3
 import re
+from datetime import datetime, timedelta
+import argparse
+import json
+
+import requests
 import imageio
 import numpy as np
-from datetime import datetime, timedelta
-import pytz
 
 # from functools import wraps
 # from time import time
@@ -26,6 +29,13 @@ MAIN_PAGE_URL =\
  'http://portal.chmi.cz/files/portal/docs/poboc/PR/grafy/br/grafy-ams-lnk.html'
 
 urllib3.disable_warnings()
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument("--output", "-o", help="Output file to save json to")
+
+    return parser.parse_args()
 
 
 def load_img():
@@ -156,14 +166,30 @@ def run():
     main_img = load_img()
     # imageio.imwrite("main_img.png", main_img)
     zabiny_color = find_color(main_img)
-    t, time = find_temp(main_img, zabiny_color)
+    temp, time = find_temp(main_img, zabiny_color)
 
-    return t, time
+    return temp, time
+
+
+def main():
+    args = parse_args()
+
+    temp, time = run()
+
+    if args.output is not None:
+        data = {
+            "isotime": time.isoformat(),
+            "timestamp": int(time.timestamp()),
+            "temp": temp
+        }
+        with open(args.output, "w") as file:
+            file.write(json.dumps(data))
+    else:
+        print('Temperature:', temp)
+        print('Time:', time)
+        delta = datetime.now(pytz.timezone('Europe/Prague')) - time
+        print('Delay:', delta.seconds//60)
 
 
 if __name__ == "__main__":
-    t, time = run()
-    print('Temperature:', t)
-    print('Time:', time)
-    delta = datetime.now(pytz.timezone('Europe/Prague')) - time
-    print('Delay:', delta.seconds//60)
+    main()
