@@ -1,6 +1,5 @@
 gunicorn
-starlette
-uvicorn[standard]
+Flask
 requests
 imageio
 numpy
