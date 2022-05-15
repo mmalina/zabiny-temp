@@ -33,24 +33,33 @@ urllib3.disable_warnings()
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument(
+        "--file",
+        "-f",
+        help="Load the image from a file instead of the default url"
+    )
     parser.add_argument("--output", "-o", help="Output file to save json to")
 
     return parser.parse_args()
 
 
-def load_img():
+def load_img(file):
     """Get the main page and extract the chart image url.
     Then open the image and return it.
     """
-    r = requests.get(MAIN_PAGE_URL, verify=False)
-    r.raise_for_status()
-    imgname = re.search('<td><img src="([^"]*)".*', r.text).group(1)
-    baseurl = MAIN_PAGE_URL[0:MAIN_PAGE_URL.rindex('/')]
-    imgurl = baseurl + '/' + imgname
-    # print(f"Loading image from {imgurl}")
-    r = requests.get(imgurl, verify=False)
-    r.raise_for_status()
-    im = imageio.imread(r.content, ignoregamma=True)
+    if file is not None:
+        uri = file
+    else:
+        r = requests.get(MAIN_PAGE_URL, verify=False)
+        r.raise_for_status()
+        imgname = re.search('<td><img src="([^"]*)".*', r.text).group(1)
+        baseurl = MAIN_PAGE_URL[0:MAIN_PAGE_URL.rindex('/')]
+        imgurl = baseurl + '/' + imgname
+        # print(f"Loading image from {imgurl}")
+        r = requests.get(imgurl, verify=False)
+        r.raise_for_status()
+        uri = r.content
+    im = imageio.imread(uri, ignoregamma=True)
     assert isinstance(im, np.ndarray)
     return im[:, :, :3]  # Remove the alpha channel, we don't need it
 
@@ -162,8 +171,7 @@ def binary_array(im):
     return np.clip(np.where(im == 153, 0, 1).sum(axis=2), 0, 1)
 
 
-def run():
-    main_img = load_img()
+def run(main_img):
     # imageio.imwrite("main_img.png", main_img)
     zabiny_color = find_color(main_img)
     temp, time = find_temp(main_img, zabiny_color)
@@ -174,7 +182,8 @@ def run():
 def main():
     args = parse_args()
 
-    temp, time = run()
+    img = load_img(args.file)
+    temp, time = run(img)
 
     if args.output is not None:
         data = {
