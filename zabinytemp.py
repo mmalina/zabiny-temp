@@ -59,7 +59,7 @@ def load_img(file):
         r = requests.get(imgurl, verify=False)
         r.raise_for_status()
         uri = r.content
-    im = imageio.imread(uri, ignoregamma=True)
+    im = imageio.v2.imread(uri, ignoregamma=True)
     assert isinstance(im, np.ndarray)
     return im[:, :, :3]  # Remove the alpha channel, we don't need it
 
