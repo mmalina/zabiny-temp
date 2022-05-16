@@ -11,6 +11,8 @@ WORKDIR /zabiny-temp
 RUN apk add --no-cache nginx python3 py3-numpy py3-pillow py3-pip && \
     pip3 install requests imageio pytz
 
-COPY data/default.conf /etc/nginx/conf.d/
+COPY data/default.conf /etc/nginx/http.d/
+
+RUN nginx
 
 CMD ["./run.sh"]
