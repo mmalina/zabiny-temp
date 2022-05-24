@@ -1,4 +1,0 @@
-requests
-imageio
-numpy
-pytz

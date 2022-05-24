@@ -1,5 +1,3 @@
-gunicorn
-Flask
 requests
 imageio
 numpy
