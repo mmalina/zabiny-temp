@@ -59,7 +59,11 @@ def load_img(file):
         r = requests.get(imgurl, verify=False)
         r.raise_for_status()
         uri = r.content
-    im = imageio.v2.imread(uri, ignoregamma=True)
+    # im = imageio.v3.imread(uri, ignoregamma=True)
+    # ignoregamma is no longer supported, but it seems somehow
+    # it works even without it? I think it was a problem before.
+    # need to double check
+    im = imageio.v3.imread(uri)
     assert isinstance(im, np.ndarray)
     return im[:, :, :3]  # Remove the alpha channel, we don't need it
 
