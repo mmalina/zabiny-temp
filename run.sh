@@ -15,6 +15,7 @@ do
     MD5SUM=$(md5sum $IMG_FILENAME)
     if ! [ "$MD5SUM" = "$PREV_MD5SUM" ]
     then
+        echo "Image changed, running zabinytemp.py"
         ./zabinytemp.py -f $IMG_FILENAME -o $OUTPUT_JSON || true
         PREV_MD5SUM=$MD5SUM
     fi

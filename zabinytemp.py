@@ -170,9 +170,8 @@ def main():
         }
         with open(args.output, "w") as file:
             file.write(json.dumps(data))
-    else:
-        print("Temperature:", temp)
-        print("Time:", time)
+    print("Temperature:", temp)
+    print("Time:", time)
 
 
 if __name__ == "__main__":
