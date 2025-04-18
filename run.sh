@@ -1,7 +1,7 @@
 #!/bin/sh
 
-IMG_URL="https://www.chmi.cz/files/portal/docs/poboc/PR/grafy/br/~TEP2M.PNG"
-IMG_FILENAME=main_img.png
+IMG_URL="https://www.chmi.cz/files/portal/docs/poboc/OS/KW/Captor/tmp/DMULTI-B2BZAB01.gif"
+IMG_FILENAME=main_img.gif
 OUTPUT_JSON=/data/temp.json
 
 mkdir /data || true
