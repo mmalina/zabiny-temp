@@ -6,7 +6,7 @@ OUTPUT_JSON=/data/temp.json
 
 mkdir /data || true
 
-nginx
+nginx -g "daemon off;" &
 
 PREV_MD5SUM=0
 while true

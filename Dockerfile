@@ -13,6 +13,4 @@ RUN pip3 install --break-system-packages requests imageio pytz
 
 COPY data/default.conf /etc/nginx/http.d/
 
-RUN nginx
-
 CMD ["./run.sh"]
