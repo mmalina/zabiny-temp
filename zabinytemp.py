@@ -97,15 +97,15 @@ def find_temp(img):
     if lines_count != 7:
         raise ValueError("We couldn't find the final line before temp legend")
 
-    # Find the red 0 on the y axis (temperature legend)
-    # This is the standalone red 0 marking zero degrees (with 3px of white on the left)
+    # Find the red 5 on the y axis (temperature legend)
+    # This is the standalone red 5 marking five degrees (with 3px of white on the left)
     template = np.array(
         [
             [0, 0, 0, 1, 1, 1, 1, 1],
+            [0, 0, 0, 1, 1, 0, 0, 0],
+            [0, 0, 0, 1, 1, 1, 1, 1],
             [0, 0, 0, 1, 1, 0, 1, 1],
-            [0, 0, 0, 1, 0, 0, 0, 1],
-            [0, 0, 0, 1, 0, 0, 0, 1],
-            [0, 0, 0, 1, 0, 0, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0, 1],
         ],
         dtype=np.uint8,
     )
@@ -143,7 +143,7 @@ def find_temp(img):
     assert hits, "We could not find our color in the whole chart"
     # 113px per 10 degrees
     hit = sum(hits) / len(hits)
-    temperature = round((zero_y - hit) * 10 / 113, 1)
+    temperature = round((zero_y - hit) * 10 / 113 + 5, 1)
     return temperature
 
 
