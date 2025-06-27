@@ -98,7 +98,8 @@ def find_temp(img):
         raise ValueError("We couldn't find the final line before temp legend")
 
     # Find the red 5 on the y axis (temperature legend)
-    # This is the standalone red 5 marking five degrees (with 3px of white on the left)
+    # This is the standalone red 5 (with 3px of white on the left) marking either
+    # 5 or 50 degrees
     template = np.array(
         [
             [0, 0, 0, 1, 1, 1, 1, 1],
@@ -118,11 +119,11 @@ def find_temp(img):
             # print(snippet)
             if np.array_equal(template, snippet):
                 # We found our match
-                # print(f"We found the zero: {x} {y}")
+                print(f"We found the 5 or 50: {x} {y}")
                 match_row = y
                 match_col = x
-                zero_y = y + 3
-                temp_color = img[zero_y, x + 3]
+                five_y = y + 3
+                temp_color = img[five_y, x + 3]
                 # print("Color:", temp_color)
                 break
         if match_row != 0:
@@ -143,7 +144,11 @@ def find_temp(img):
     assert hits, "We could not find our color in the whole chart"
     # 113px per 10 degrees
     hit = sum(hits) / len(hits)
-    temperature = round((zero_y - hit) * 10 / 113 + 5, 1)
+    if five_y < 150:
+        # If the 5 is below 150, we assume it's 50 degrees
+        # and we need to adjust the five_y accordingly
+        five_y = five_y + 4.5 * 113
+    temperature = round((five_y - hit) * 10 / 113 + 5, 1)
     return temperature
 
 
