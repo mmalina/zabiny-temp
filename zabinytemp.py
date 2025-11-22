@@ -86,15 +86,16 @@ def find_temp(img):
         snippet = bin_img[y : y + 10, x : x + 1]
         if np.array_equal(template, snippet):
             lines_count += 1
-            if lines_count == 6:
+            if lines_count == 5:
                 # We found vertical line right of temp legend
-                # print(f"We found final line: {x} {y}")
+                # print(f"We found vertical line right of temp legend: {x} {y}")
                 zero_right_limit = x - 14
-            elif lines_count == 7:
+            elif lines_count == 6:
                 # We found vertical line left of temp legend
+                # print(f"We found vertical line left of temp legend: {x} {y}")
                 zero_left_limit = x + 2
                 break
-    if lines_count != 7:
+    if lines_count != 6:
         raise ValueError("We couldn't find the final line before temp legend")
 
     # Find the red 5 on the y axis (temperature legend)
@@ -112,11 +113,13 @@ def find_temp(img):
     )
     match_row = 0
     match_col = 0
+    # print(f"Searching for 5 between x={zero_left_limit} and x={zero_right_limit}")
     for x in range(zero_left_limit, zero_right_limit):
         for y in range(50, 550):
             snippet = bin_img[y : y + 5, x : x + 8]
-            # print(f"Checking row {y} col {x}")
-            # print(snippet)
+            # if np.any(snippet):
+            #     print(f"Checking row {y} col {x}")
+            #     print(snippet)
             if np.array_equal(template, snippet):
                 # We found our match
                 print(f"We found the 5 or 50: {x} {y}")
