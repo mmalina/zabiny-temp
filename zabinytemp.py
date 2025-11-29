@@ -86,16 +86,16 @@ def find_temp(img):
         snippet = bin_img[y : y + 10, x : x + 1]
         if np.array_equal(template, snippet):
             lines_count += 1
-            if lines_count == 5:
+            if lines_count == 6:
                 # We found vertical line right of temp legend
                 # print(f"We found vertical line right of temp legend: {x} {y}")
                 zero_right_limit = x - 14
-            elif lines_count == 6:
+            elif lines_count == 7:
                 # We found vertical line left of temp legend
                 # print(f"We found vertical line left of temp legend: {x} {y}")
                 zero_left_limit = x + 2
                 break
-    if lines_count != 6:
+    if lines_count != 7:
         raise ValueError("We couldn't find the final line before temp legend")
 
     # Find the red 5 on the y axis (temperature legend)
