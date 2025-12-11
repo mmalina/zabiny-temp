@@ -37,13 +37,17 @@ temp_data=$(curl -s "https://data-provider.chmi.cz/api/graphs/graf.meteo-stanice
 last_temp=$(echo "$temp_data" | jq -r '.dataPoints[-1].values.T')
 last_timestamp=$(echo "$temp_data" | jq -r '.dataPoints[-1].timestamp')
 
-# Convert ISO timestamp to Unix epoch seconds (handles both GNU and BSD date)
+# Convert ISO timestamp to Unix epoch seconds (handles GNU, BSD, and BusyBox date)
 timestamp_sec=$(date -d "$last_timestamp" '+%s' 2>/dev/null || \
+                date -D '%Y-%m-%dT%H:%M:%SZ' -d "$last_timestamp" '+%s' 2>/dev/null || \
                 date -j -f '%Y-%m-%dT%H:%M:%SZ' "$last_timestamp" '+%s' 2>/dev/null)
 
 # Generate ISO time in Europe/Prague timezone
 isotime=$(TZ="Europe/Prague" date -d "$last_timestamp" '+%Y-%m-%dT%H:%M:%S%:z' 2>/dev/null || \
-          TZ="Europe/Prague" date -r "$timestamp_sec" '+%Y-%m-%dT%H:%M:%S%z' 2>/dev/null | sed 's/\(..\)$/:\1/')
+          TZ="Europe/Prague" date -D '%Y-%m-%dT%H:%M:%SZ' -d "$last_timestamp" '+%Y-%m-%dT%H:%M:%S%z' 2>/dev/null || \
+          TZ="Europe/Prague" date -r "$timestamp_sec" '+%Y-%m-%dT%H:%M:%S%z' 2>/dev/null)
+# Fix timezone format (add colon if needed: +0100 -> +01:00)
+isotime=$(echo "$isotime" | sed 's/\([+-][0-9][0-9]\)\([0-9][0-9]\)$/\1:\2/')
 
 echo "Temperature: ${last_temp}°C"
 echo "Timestamp: $last_timestamp"
